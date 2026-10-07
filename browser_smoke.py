@@ -18,7 +18,7 @@ def run(report_path):
     from playwright.sync_api import sync_playwright
     from desktop import app as app_module
     report={'passed':False,'checks':{}}
-    app=None;context=None
+    app=None;context=None;worker=None
     original_data=app_module.DATA
     original_error=app_module.messagebox.showerror
     def no_dialog(*args,**kwargs): raise RuntimeError('Desktop initialization or saving failed')
@@ -39,6 +39,8 @@ def run(report_path):
                 app_module.messagebox.showerror=no_dialog
                 app=app_module.App()
                 stack.callback(close_resource,app.close)
+                # Map Tk windows before Chromium, so their first update cannot steal browser focus.
+                app.root.update()
                 app.settings.update(grace=1,min_interval=1)
                 report['phase']='browser startup'
                 playwright=stack.enter_context(sync_playwright())
@@ -92,7 +94,24 @@ def run(report_path):
                         'session_state':app.session.state,
                         'classification':app.session.last_kind,
                         'browser_event_received':bool(app.last_browser_stamp),
-                        'foreground_hook':bool(app.monitor.available)}
+                        'foreground_hook':bool(app.monitor.available),
+                        'foreground_app':app_module.foreground()}
+                if worker:
+                    try:
+                        report['extension_diagnostics']=worker.evaluate('''async () => {
+                            const {token}=await chrome.storage.local.get('token');
+                            const windows=await chrome.windows.getAll();
+                            const result={paired:Boolean(token),focused_browser_window:windows.some(w=>w.focused),
+                                loopback_permission:await chrome.permissions.contains({origins:['http://127.0.0.1:47831/*']})};
+                            try {
+                                const response=await fetch('http://127.0.0.1:47831/status',{headers:{Authorization:'Bearer '+token}});
+                                result.http_status=response.status;
+                                if(response.ok) result.monitoring_enabled=Boolean((await response.json()).epoch);
+                            } catch(error) { result.transport_error=String(error); }
+                            return result;
+                        }''')
+                    except Exception as diagnostic_error:
+                        report['extension_diagnostics']={'error':str(diagnostic_error)[:300]}
     except Exception as error:
         remember_error(error,cleanup='error_type' in report)
     finally:
