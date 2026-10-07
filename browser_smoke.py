@@ -1,6 +1,7 @@
 """Windows-only real MV3 extension/desktop test using synthetic, routed pages.
 Requires playwright and its Chromium download. No study/browser data is uploaded.
 """
+from contextlib import ExitStack
 import argparse
 import json
 import os
@@ -21,17 +22,32 @@ def run(report_path):
     original_data=app_module.DATA
     original_error=app_module.messagebox.showerror
     def no_dialog(*args,**kwargs): raise RuntimeError('Desktop initialization or saving failed')
+    def remember_error(error,cleanup=False):
+        description={'type':type(error).__name__,'message':str(error)[:1000]}
+        if cleanup or 'error_type' in report:
+            report.setdefault('cleanup_errors',[]).append(description)
+        else:
+            report['error_type']=description['type'];report['error']=description['message']
+    def close_resource(close):
+        try: close()
+        except Exception as error: remember_error(error,cleanup=True)
     try:
-        with tempfile.TemporaryDirectory(prefix='palpal-browser-smoke-') as directory:
-            app_module.DATA=Path(directory)/'data'
-            app_module.messagebox.showerror=no_dialog
-            app=app_module.App()
-            app.settings.update(grace=1,min_interval=1)
-            with sync_playwright() as playwright:
+        with ExitStack() as stack:
+            directory=stack.enter_context(tempfile.TemporaryDirectory(prefix='palpal-browser-smoke-'))
+            try:
+                app_module.DATA=Path(directory)/'data'
+                app_module.messagebox.showerror=no_dialog
+                app=app_module.App()
+                stack.callback(close_resource,app.close)
+                app.settings.update(grace=1,min_interval=1)
+                report['phase']='browser startup'
+                playwright=stack.enter_context(sync_playwright())
                 extension=Path(__file__).resolve().parents[1]/'extension'
                 context=playwright.chromium.launch_persistent_context(
-                    str(Path(directory)/'browser'),headless=False,
+                    str(Path(directory)/'browser'),headless=False,channel='chromium',
+                    ignore_default_args=['--disable-extensions'],
                     args=[f'--disable-extensions-except={extension}',f'--load-extension={extension}'])
+                stack.callback(close_resource,context.close)
                 worker=context.service_workers[0] if context.service_workers else context.wait_for_event('serviceworker')
                 worker.evaluate('(token) => chrome.storage.local.set({token})',app.settings['token'])
                 page=context.new_page()
@@ -47,10 +63,12 @@ def run(report_path):
                         if condition(): return
                         page.wait_for_timeout(50)
                     raise RuntimeError(label)
+                report['phase']='study context'
                 app.goal.delete(0,'end');app.goal.insert(0,'Study algebra');app.start()
                 page.goto('https://www.youtube.com/study');page.bring_to_front()
                 wait_for(lambda:app.session.last_kind=='STUDY','Study context never arrived')
                 report['checks']['study_quiet']=app.session.prompts==0
+                report['phase']='distraction prompt'
                 page.goto('https://www.youtube.com/entertainment');page.bring_to_front()
                 wait_for(lambda:app.session.prompts==1,'Distraction prompt never arrived')
                 report['checks']['extension_to_desktop']=app.prompt_context is not None
@@ -67,22 +85,24 @@ def run(report_path):
                 record=app.store.history()[0]
                 report['checks']['summary_only']='title' not in record and 'domain' not in record
                 report['passed']=all(report['checks'].values())
-                context.close();context=None
-            app.close();app=None
+            except Exception as error:
+                remember_error(error)
+                if app and app.session:
+                    report['diagnostics']={
+                        'session_state':app.session.state,
+                        'classification':app.session.last_kind,
+                        'browser_event_received':bool(app.last_browser_stamp),
+                        'foreground_hook':bool(app.monitor.available)}
     except Exception as error:
-        report['error_type']=type(error).__name__
-        report['error']=str(error)[:200]
+        remember_error(error,cleanup='error_type' in report)
     finally:
-        if context:
-            try: context.close()
-            except Exception: pass
-        if app:
-            try: app.close()
-            except Exception: pass
         app_module.DATA=original_data
         app_module.messagebox.showerror=original_error
+        if 'error_type' in report or report.get('cleanup_errors'): report['passed']=False
         output=Path(report_path);output.parent.mkdir(parents=True,exist_ok=True)
-        output.write_text(json.dumps(report,indent=2))
+        encoded=json.dumps(report,indent=2)
+        output.write_text(encoded)
+        print(encoded)
     return 0 if report['passed'] else 1
 
 if __name__=='__main__':
