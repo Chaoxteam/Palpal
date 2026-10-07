@@ -1,0 +1,1 @@
+document.getElementById('save').onclick=async()=>{await chrome.storage.local.set({token:document.getElementById('token').value.trim()});document.getElementById('status').textContent='Saved on this computer.';};

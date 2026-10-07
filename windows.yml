@@ -1,0 +1,60 @@
+name: Windows build and smoke tests
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install runtime dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Run tests with real Windows GUI and loopback
+        env:
+          PALPAL_LIVE_TESTS: '1'
+          PALPAL_GUI_TESTS: '1'
+        run: python -m unittest discover -s tests -v
+      - name: Test extension privacy behavior
+        run: node tests/extension.test.cjs
+      - name: Install real-browser test tools
+        run: |
+          python -m pip install "playwright>=1.50,<2"
+          python -m playwright install chromium
+      - name: Exercise real extension and desktop flow
+        run: python tools/browser_smoke.py
+      - name: Install installer compiler
+        run: choco install innosetup --yes --no-progress
+      - name: Build portable package and installer
+        run: ./packaging/build.ps1 -RequireInstaller
+      - name: Verify packaged and installed application
+        run: ./packaging/verify-package.ps1
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PalPal-Windows
+          path: |
+            dist/PalPal-portable.zip
+            dist/PalPal-Setup.exe
+            dist/packaged-smoke.json
+            dist/installed-smoke.json
+          if-no-files-found: error
+      - name: Upload verification reports even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: PalPal-Verification-Reports
+          path: |
+            reports/*.json
+            dist/*smoke.json
+          if-no-files-found: ignore

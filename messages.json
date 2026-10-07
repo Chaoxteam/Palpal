@@ -1,0 +1,121 @@
+{
+  "check": [
+    [
+      "Is this helping with what you're working on?",
+      "Is this for your study goal?"
+    ],
+    [
+      "Is this part of your study task?",
+      "Does this help with your goal?"
+    ],
+    [
+      "Study-related?",
+      "Part of your goal?"
+    ]
+  ],
+  "reset": [
+    [
+      "Want a little rest, then one small step?",
+      "Would a short break help?"
+    ],
+    [
+      "Want a short reset?",
+      "Try a break and a smaller next step?"
+    ],
+    [
+      "Short reset?",
+      "Want a break, then another 10 minutes?"
+    ]
+  ],
+  "return": [
+    [
+      "Nice reset. Let's keep going.",
+      "One step at a time."
+    ],
+    [
+      "Good reset. Back to your goal.",
+      "You brought yourself back to the task."
+    ],
+    [
+      "Back on track.",
+      "One step at a time."
+    ]
+  ],
+  "start": [
+    [
+      "Let's try one step at a time."
+    ],
+    [
+      "One step at a time."
+    ],
+    [
+      "Ready when you are."
+    ]
+  ],
+  "break": [
+    [
+      "Take a little rest."
+    ],
+    [
+      "Time for a short rest."
+    ],
+    [
+      "Take a short break."
+    ]
+  ],
+  "break_ending": [
+    [
+      "Your break is almost done."
+    ],
+    [
+      "Your break is nearly over."
+    ],
+    [
+      "Break ending soon."
+    ]
+  ],
+  "resume": [
+    [
+      "Ready for another small step?"
+    ],
+    [
+      "Ready for the next round?"
+    ],
+    [
+      "Ready for another 10 minutes?"
+    ]
+  ],
+  "complete": [
+    [
+      "You finished what you planned. Nice work sticking with it."
+    ],
+    [
+      "Goal complete. Nice work sticking with it."
+    ],
+    [
+      "Goal complete."
+    ]
+  ],
+  "block": [
+    [
+      "Your focus time is done."
+    ],
+    [
+      "Focus block complete."
+    ],
+    [
+      "Focus block complete."
+    ]
+  ],
+  "saved": [
+    [
+      "Session saved. You can pick it up next time."
+    ],
+    [
+      "Session saved. You can continue from here next time."
+    ],
+    [
+      "Session saved. Continue from here next time."
+    ]
+  ]
+}

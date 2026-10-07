@@ -1,0 +1,121 @@
+{
+  "study_domains": [
+    "classroom.google.com",
+    "docs.google.com",
+    "drive.google.com",
+    "khanacademy.org",
+    "office.com",
+    "microsoft365.com",
+    "edu.google.com",
+    "desmos.com",
+    "geogebra.org",
+    "wolframalpha.com",
+    "openstax.org",
+    "ck12.org",
+    "quizlet.com",
+    "moodle.org"
+  ],
+  "distraction_domains": [
+    "tiktok.com",
+    "netflix.com",
+    "twitch.tv",
+    "discord.com",
+    "instagram.com"
+  ],
+  "study_apps": [
+    "winword.exe",
+    "excel.exe",
+    "onenote.exe",
+    "acrord32.exe"
+  ],
+  "distraction_apps": [
+    "steam.exe",
+    "robloxplayerbeta.exe",
+    "fortniteclient-win64-shipping.exe"
+  ],
+  "subjects": {
+    "algebra": [
+      "algebra",
+      "equation",
+      "quadratic",
+      "polynomial",
+      "factorization"
+    ],
+    "geometry": [
+      "geometry",
+      "triangle",
+      "angle",
+      "circle",
+      "pythagorean"
+    ],
+    "biology": [
+      "biology",
+      "cell",
+      "photosynthesis",
+      "genetics"
+    ],
+    "chemistry": [
+      "chemistry",
+      "atom",
+      "molecule",
+      "reaction",
+      "periodic"
+    ],
+    "physics": [
+      "physics",
+      "force",
+      "motion",
+      "velocity",
+      "newton"
+    ],
+    "history": [
+      "history",
+      "historical",
+      "civilization"
+    ],
+    "writing": [
+      "essay",
+      "writing",
+      "grammar",
+      "punctuation"
+    ]
+  },
+  "entertainment_words": [
+    "minecraft",
+    "funniest",
+    "gaming",
+    "prank",
+    "fortnite",
+    "gameplay",
+    "roblox"
+  ],
+  "stop_words": [
+    "study",
+    "studying",
+    "the",
+    "a",
+    "an",
+    "to",
+    "of",
+    "and",
+    "how",
+    "for",
+    "with",
+    "on",
+    "my",
+    "homework",
+    "finish",
+    "complete",
+    "work",
+    "learn",
+    "learning",
+    "task",
+    "help",
+    "video",
+    "watch",
+    "math",
+    "maths",
+    "lesson",
+    "explained"
+  ]
+}
